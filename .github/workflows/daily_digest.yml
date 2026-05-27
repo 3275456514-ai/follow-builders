@@ -1,0 +1,33 @@
+name: Daily Information Digest
+
+on:
+  schedule:
+    # 每天北京时间早上 8:00 自动运行 (UTC 时间 0:00)
+    - cron: '0 0 * * *'
+  workflow_dispatch: # 允许手动点击触发
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+
+      - name: Install dependencies
+        run: npm install
+
+      - name: Run Fetch and Deliver
+        env:
+          # 注入邮箱和可能需要的 API 密钥
+          CLAUDE_API_KEY: ${{ secrets.CLAUDE_API_KEY }} 
+          EMAIL_USERNAME: ${{ secrets.EMAIL_USERNAME }}
+          EMAIL_PASSWORD: ${{ secrets.EMAIL_PASSWORD }}
+        run: |
+          # 修正路径：原作者的脚本在 scripts 目录下
+          node scripts/prepare-digest.js
+          node scripts/deliver.js
